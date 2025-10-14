@@ -6,9 +6,9 @@ Sistema em console para cadastro de produtos e clientes
 
 import os
 import sys
-from src.cli.menu_principal import MenuPrincipal
-from src.db.database import Database
-from src.log.logger import setup_logger
+from cli.menu_principal import MenuPrincipal
+from db.database import Database
+from log.logger import setup_logger
 
 def main():
     """Função principal do sistema"""

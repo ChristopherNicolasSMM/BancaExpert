@@ -80,7 +80,7 @@ class MenuPrincipal:
     
     def menu_produtos(self):
         """Menu de gerenciamento de produtos"""
-        from src.controller.produto_controller import ProdutoController
+        from controler.produto_controller import ProdutoController
         
         controller = ProdutoController(self.db)
         
@@ -117,7 +117,7 @@ class MenuPrincipal:
     
     def menu_vendas(self):
         """Menu de vendas"""
-        from src.controller.venda_controller import VendaController
+        from controler.venda_controller import VendaController
         
         controller = VendaController(self.db, self.usuario_logado['id'])
         
@@ -148,7 +148,7 @@ class MenuPrincipal:
     
     def menu_clientes(self):
         """Menu de clientes"""
-        from src.controller.cliente_controller import ClienteController
+        from controler.cliente_controller import ClienteController
         
         controller = ClienteController(self.db)
         
@@ -185,14 +185,13 @@ class MenuPrincipal:
     
     def menu_relatorios(self):
         """Menu de relatórios"""
-        from src.controller.relatorio_controller import RelatorioController
-        
-        controller = RelatorioController(self.db)
-        controller.menu_relatorios()
+        print("\nMÓDULO DE RELATÓRIOS")
+        print("Em desenvolvimento...")
+        input("Pressione Enter para continuar...")
     
     def menu_importar_exportar(self):
         """Menu de importação/exportação"""
-        from src.controller.import_export_controller import ImportExportController
+        from controler.import_export_controller import ImportExportController
         
         controller = ImportExportController(self.db)
         controller.menu_importar_exportar()
@@ -204,10 +203,9 @@ class MenuPrincipal:
             input("Pressione Enter para continuar...")
             return
             
-        from src.controller.usuario_controller import UsuarioController
-        
-        controller = UsuarioController(self.db)
-        controller.menu_usuarios()
+        print("\nMÓDULO DE USUÁRIOS")
+        print("Em desenvolvimento...")
+        input("Pressione Enter para continuar...")
     
     def executar(self):
         """Executar o sistema"""

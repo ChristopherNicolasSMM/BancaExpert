@@ -1,4 +1,5 @@
 import sqlite3
+import os
 from datetime import datetime
 
 class VendaController:
@@ -189,7 +190,7 @@ class VendaController:
     def selecionar_cliente(self):
         """Selecionar cliente para venda"""
         try:
-            from src.controller.cliente_controller import ClienteController
+            from src.controler.cliente_controller import ClienteController
             cliente_controller = ClienteController(self.db)
             return cliente_controller.selecionar_cliente_interativo()
         except Exception as e:
