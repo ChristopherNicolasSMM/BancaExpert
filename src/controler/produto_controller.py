@@ -1,9 +1,11 @@
 import sqlite3
 from datetime import datetime
+from utils.busca_interativa import BuscaInterativa
 
 class ProdutoController:
     def __init__(self, database):
         self.db = database
+        self.busca = BuscaInterativa(database)
     
     def listar_produtos(self):
         """Listar todos os produtos"""
@@ -37,17 +39,16 @@ class ProdutoController:
             print("\nCADASTRAR NOVO PRODUTO")
             print("-" * 40)
             
-            # Obter categorias
-            categorias = self.db.executar_consulta("SELECT id, nome FROM categorias WHERE ativo = 1")
-            
-            print("Categorias disponíveis:")
-            for cat in categorias:
-                print(f"{cat['id']}. {cat['nome']}")
-            print()
-            
             nome = input("Nome do produto: ")
             descricao = input("Descrição: ")
-            categoria_id = input("ID da categoria: ")
+            
+            # Usar busca interativa para categoria
+            categoria = self.busca.buscar_categoria("SELECIONAR CATEGORIA PARA O PRODUTO")
+            if not categoria:
+                print("Categoria é obrigatória!")
+                return
+            categoria_id = categoria['id']
+            
             preco_custo = float(input("Preço de custo: R$ "))
             preco_venda = float(input("Preço de venda: R$ "))
             estoque = int(input("Estoque inicial: "))
@@ -77,18 +78,13 @@ class ProdutoController:
     def editar_produto(self):
         """Editar produto existente"""
         try:
-            produto_id = input("\nID do produto a editar: ")
-            
-            produto = self.db.executar_consulta(
-                "SELECT * FROM produtos WHERE id = ? AND ativo = 1", 
-                (produto_id,)
-            )
-            
+            # Usar busca interativa para selecionar produto
+            produto = self.busca.buscar_produto("SELECIONAR PRODUTO PARA EDITAR")
             if not produto:
-                print("Produto não encontrado!")
+                print("Produto não selecionado!")
                 return
             
-            produto = produto[0]
+            produto_id = produto['id']
             print(f"\nEditando produto: {produto['nome']}")
             print("Deixe em branco para manter o valor atual")
             
@@ -118,9 +114,16 @@ class ProdutoController:
     def excluir_produto(self):
         """Excluir produto (soft delete)"""
         try:
-            produto_id = input("\nID do produto a excluir: ")
+            # Usar busca interativa para selecionar produto
+            produto = self.busca.buscar_produto("SELECIONAR PRODUTO PARA EXCLUIR")
+            if not produto:
+                print("Produto não selecionado!")
+                return
             
-            confirmacao = input("Tem certeza? (s/n): ")
+            produto_id = produto['id']
+            print(f"\nProduto selecionado: {produto['nome']}")
+            
+            confirmacao = input("Tem certeza que deseja excluir? (s/n): ")
             if confirmacao.lower() == 's':
                 self.db.executar_consulta(
                     "UPDATE produtos SET ativo = 0 WHERE id = ?", 

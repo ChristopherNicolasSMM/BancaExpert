@@ -1,4 +1,4 @@
-# Barcakpert - Sistema de Gerenciamento para Banca de Jornal
+# BarcaExpert - Sistema de Gerenciamento para Banca de Jornal
 
 ![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
@@ -22,7 +22,7 @@ Sistema em console para gerenciamento completo de banca de jornal, incluindo cad
 
 ## 🎯 Visão Geral
 
-O Barcakpert é um sistema completo desenvolvido em Python para gerenciamento de bancas de jornal. Oferece controle de produtos, vendas, clientes, estoque e relatórios, com interface em console intuitiva e funcionalidades fiscais integradas.
+O BarcaExpert é um sistema completo desenvolvido em Python para gerenciamento de bancas de jornal. Oferece controle de produtos, vendas, clientes, estoque e relatórios, com interface em console intuitiva e funcionalidades fiscais integradas.
 
 ## ✨ Funcionalidades
 
@@ -65,7 +65,7 @@ O Barcakpert é um sistema completo desenvolvido em Python para gerenciamento de
 ## 🗂️ Estrutura do Projeto
 
 ```
-Barcakpert/
+BarcaExpert/
 ├── src/
 │   ├── __init__.py
 │   ├── api/                 # Futura API REST
@@ -104,7 +104,7 @@ Barcakpert/
 1. **Clone ou baixe o projeto**
    ```bash
    git clone <url-do-repositorio>
-   cd Barcakpert
+   cd BarcaExpert
    ```
 
 2. **Instale as dependências**
@@ -125,7 +125,7 @@ Barcakpert/
 ### Arquivo .env
 ```env
 # Configurações do Banco de Dados
-DB_PATH=./barcakpert.db
+DB_PATH=./BarcaExpert.db
 DB_BACKUP_PATH=./backups/
 
 # Configurações do Sistema
@@ -277,7 +277,7 @@ Baixe o modelo em: `Menu 5 → Baixar modelo de planilha`
    ```
 
 ### Logs e Debug
-- Logs salvos em `logs/barcakpert_YYYYMMDD.log`
+- Logs salvos em `logs/BarcaExpert_YYYYMMDD.log`
 - Nível configurável via `.env`
 - Timestamp e detalhes completos
 
@@ -304,7 +304,7 @@ Baixe o modelo em: `Menu 5 → Baixar modelo de planilha`
    - Execute como administrador se necessário
 
 ### Logs de Erro
-Consulte `logs/barcakpert_YYYYMMDD.log` para detalhes de erros.
+Consulte `logs/BarcaExpert_YYYYMMDD.log` para detalhes de erros.
 
 ## 📄 Licença
 
@@ -338,4 +338,4 @@ Contribuições são bem-vindas! Por favor:
 
 ---
 
-**Barcakpert** - Tornando a gestão da sua banca mais simples e eficiente! 🗞️✨
+**BarcaExpert** - Tornando a gestão da sua banca mais simples e eficiente! 🗞️✨

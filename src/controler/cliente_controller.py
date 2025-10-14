@@ -1,8 +1,10 @@
 import sqlite3
+from utils.busca_interativa import BuscaInterativa
 
 class ClienteController:
     def __init__(self, database):
         self.db = database
+        self.busca = BuscaInterativa(database)
     
     def listar_clientes(self):
         """Listar todos os clientes"""
@@ -55,18 +57,13 @@ class ClienteController:
     def editar_cliente(self):
         """Editar cliente existente"""
         try:
-            cliente_id = input("\nID do cliente a editar: ")
-            
-            cliente = self.db.executar_consulta(
-                "SELECT * FROM clientes WHERE id = ? AND ativo = 1", 
-                (cliente_id,)
-            )
-            
+            # Usar busca interativa para selecionar cliente
+            cliente = self.busca.buscar_cliente("SELECIONAR CLIENTE PARA EDITAR")
             if not cliente:
-                print("Cliente não encontrado!")
+                print("Cliente não selecionado!")
                 return
             
-            cliente = cliente[0]
+            cliente_id = cliente['id']
             print(f"\nEditando cliente: {cliente['nome']}")
             print("Deixe em branco para manter o valor atual")
             
@@ -93,7 +90,14 @@ class ClienteController:
     def excluir_cliente(self):
         """Excluir cliente (soft delete)"""
         try:
-            cliente_id = input("\nID do cliente a excluir: ")
+            # Usar busca interativa para selecionar cliente
+            cliente = self.busca.buscar_cliente("SELECIONAR CLIENTE PARA EXCLUIR")
+            if not cliente:
+                print("Cliente não selecionado!")
+                return
+            
+            cliente_id = cliente['id']
+            print(f"\nCliente selecionado: {cliente['nome']}")
             
             # Verificar se cliente tem vendas em aberto
             vendas_aberto = self.db.executar_consulta('''
@@ -105,7 +109,7 @@ class ClienteController:
                 print("Não é possível excluir cliente com vendas em aberto!")
                 return
             
-            confirmacao = input("Tem certeza? (s/n): ")
+            confirmacao = input("Tem certeza que deseja excluir? (s/n): ")
             if confirmacao.lower() == 's':
                 self.db.executar_consulta(
                     "UPDATE clientes SET ativo = 0 WHERE id = ?", 
@@ -122,18 +126,13 @@ class ClienteController:
     def consultar_limite_credito(self):
         """Consultar limite de crédito e situação do cliente"""
         try:
-            cliente_id = input("\nID do cliente: ")
-            
-            cliente = self.db.executar_consulta(
-                "SELECT * FROM clientes WHERE id = ? AND ativo = 1", 
-                (cliente_id,)
-            )
-            
+            # Usar busca interativa para selecionar cliente
+            cliente = self.busca.buscar_cliente("SELECIONAR CLIENTE PARA CONSULTAR LIMITE")
             if not cliente:
-                print("Cliente não encontrado!")
+                print("Cliente não selecionado!")
                 return
             
-            cliente = cliente[0]
+            cliente_id = cliente['id']
             
             # Calcular total em aberto
             total_aberto = self.db.executar_consulta('''
@@ -171,33 +170,13 @@ class ClienteController:
     def selecionar_cliente_interativo(self):
         """Selecionar cliente de forma interativa para venda"""
         try:
-            clientes = self.db.executar_consulta(
-                "SELECT id, nome, telefone FROM clientes WHERE ativo = 1 ORDER BY nome"
-            )
-            
-            if not clientes:
-                print("Nenhum cliente cadastrado!")
+            # Usar busca interativa para selecionar cliente
+            cliente = self.busca.buscar_cliente("SELECIONAR CLIENTE PARA VENDA")
+            if not cliente:
+                print("Nenhum cliente selecionado.")
                 return None
             
-            print("\nSELECIONAR CLIENTE")
-            print("-" * 50)
-            for cliente in clientes:
-                print(f"{cliente['id']}. {cliente['nome']} - {cliente['telefone'] or 'Sem telefone'}")
-            print("0. Não vincular cliente")
-            
-            while True:
-                try:
-                    opcao = int(input("\nEscolha o cliente: "))
-                    if opcao == 0:
-                        return None
-                    
-                    cliente_escolhido = next((c for c in clientes if c['id'] == opcao), None)
-                    if cliente_escolhido:
-                        return cliente_escolhido['id']
-                    else:
-                        print("Cliente inválido!")
-                except ValueError:
-                    print("Digite um número válido!")
+            return cliente['id']
                     
         except sqlite3.Error as e:
             print(f"Erro ao selecionar cliente: {e}")

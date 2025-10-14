@@ -1,12 +1,14 @@
 import sqlite3
 import os
 from datetime import datetime
+from utils.busca_interativa import BuscaInterativa
 
 class VendaController:
     def __init__(self, database, usuario_id):
         self.db = database
         self.usuario_id = usuario_id
         self.carrinho = []
+        self.busca = BuscaInterativa(database)
     
     def nova_venda(self):
         """Processar nova venda"""
@@ -52,19 +54,11 @@ class VendaController:
     def adicionar_produto_carrinho(self):
         """Adicionar produto ao carrinho"""
         try:
-            codigo = input("\nCódigo do produto ou código de barras: ")
-            
-            # Buscar produto
-            produto = self.db.executar_consulta('''
-                SELECT * FROM produtos 
-                WHERE (id = ? OR codigo_barras = ?) AND ativo = 1 AND estoque > 0
-            ''', (codigo, codigo))
-            
+            # Usar busca interativa para selecionar produto
+            produto = self.busca.buscar_produto("SELECIONAR PRODUTO PARA VENDA", com_estoque=True)
             if not produto:
-                print("Produto não encontrado ou sem estoque!")
+                print("Produto não selecionado!")
                 return
-            
-            produto = produto[0]
             print(f"Produto: {produto['nome']} | Preço: R$ {produto['preco_venda']:.2f} | Estoque: {produto['estoque']}")
             
             quantidade = int(input("Quantidade: "))
@@ -190,7 +184,7 @@ class VendaController:
     def selecionar_cliente(self):
         """Selecionar cliente para venda"""
         try:
-            from src.controler.cliente_controller import ClienteController
+            from controler.cliente_controller import ClienteController
             cliente_controller = ClienteController(self.db)
             return cliente_controller.selecionar_cliente_interativo()
         except Exception as e:

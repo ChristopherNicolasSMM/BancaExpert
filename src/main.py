@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Sistema de Gerenciamento para Banca de Jornal - Barcakpert
+Sistema de Gerenciamento para Banca de Jornal - BarcaExpert
 Sistema em console para cadastro de produtos e clientes
 """
 
@@ -15,7 +15,7 @@ def main():
     try:
         # Configurar logger
         logger = setup_logger()
-        logger.info("Iniciando sistema Barcakpert")
+        logger.info("Iniciando sistema BarcaExpert")
         
         # Inicializar banco de dados
         db = Database()

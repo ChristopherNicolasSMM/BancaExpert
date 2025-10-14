@@ -11,11 +11,11 @@ def setup_logger():
     log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     
     # Configurar logger principal
-    logger = logging.getLogger('barcakpert')
+    logger = logging.getLogger('BarcaExpert')
     logger.setLevel(logging.INFO)
     
     # Handler para arquivo
-    log_file = f'logs/barcakpert_{datetime.now().strftime("%Y%m%d")}.log'
+    log_file = f'logs/BarcaExpert_{datetime.now().strftime("%Y%m%d")}.log'
     file_handler = logging.FileHandler(log_file, encoding='utf-8')
     file_handler.setLevel(logging.INFO)
     file_formatter = logging.Formatter(log_format)

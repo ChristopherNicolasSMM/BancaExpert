@@ -8,7 +8,7 @@ class Database:
         if db_path is None:
             # Usar diretório do executável como base para o banco
             base_dir = os.path.dirname(os.path.abspath(__file__))
-            db_path = os.path.join(base_dir, 'barcakpert.db')
+            db_path = os.path.join(base_dir, 'barcaExpert.db')
         
         self.db_path = db_path
         self.conn = None
