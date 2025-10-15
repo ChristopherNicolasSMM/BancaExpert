@@ -70,9 +70,8 @@ class MenuPrincipal:
             print("7. Configurações")
             print("0. Sair")
             print()
-            from os import getenv
-            ansi_enabled = getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
-            footer_color = getenv('ANSI_FOOTER_COLOR', 'cyan')
+            ansi_enabled = os.getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+            footer_color = os.getenv('ANSI_FOOTER_COLOR', 'cyan')
             print_footer_hotkeys([
                 ("F1", "Pesquisar"), ("F2", "Por Nome"), ("F5", "Clientes"), ("F6", "Relatórios"),
                 ("F7", "Import/Export"), ("F8", "Usuários"), ("F12", "Sair")
@@ -135,8 +134,8 @@ class MenuPrincipal:
             print("5. Consultar Estoque")
             print("0. Voltar")
             print()
-            ansi_enabled = getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
-            footer_color = getenv('ANSI_FOOTER_COLOR', 'cyan')
+            ansi_enabled = os.getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+            footer_color = os.getenv('ANSI_FOOTER_COLOR', 'cyan')
             print_footer_hotkeys([
                 ("F1", "Buscar"), ("F2", "Por Nome"), ("F3", "Editar"), ("F4", "Excluir"),
                 ("F5", "Estoque"), ("F12", "Voltar")
@@ -183,8 +182,8 @@ class MenuPrincipal:
             print("3. Vendas em Aberto")
             print("0. Voltar")
             print()
-            ansi_enabled = getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
-            footer_color = getenv('ANSI_FOOTER_COLOR', 'cyan')
+            ansi_enabled = os.getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+            footer_color = os.getenv('ANSI_FOOTER_COLOR', 'cyan')
             print_footer_hotkeys([
                 ("F1", "Nova"), ("F6", "Histórico"), ("F7", "Em Aberto"), ("F12", "Voltar")
             ], ansi_enabled, footer_color)
@@ -232,8 +231,8 @@ class MenuPrincipal:
             print("5. Consultar Limite Crédito")
             print("0. Voltar")
             print()
-            ansi_enabled = getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
-            footer_color = getenv('ANSI_FOOTER_COLOR', 'cyan')
+            ansi_enabled = os.getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+            footer_color = os.getenv('ANSI_FOOTER_COLOR', 'cyan')
             print_footer_hotkeys([
                 ("F1", "Listar"), ("F2", "Cadastrar"), ("F3", "Editar"), ("F4", "Excluir"), ("F5", "Limite"), ("F12", "Voltar")
             ], ansi_enabled, footer_color)
@@ -269,9 +268,8 @@ class MenuPrincipal:
         self.exibir_cabecalho()
         print("\nMÓDULO DE RELATÓRIOS")
         print("Em desenvolvimento...")
-        from os import getenv
-        ansi_enabled = getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
-        footer_color = getenv('ANSI_FOOTER_COLOR', 'cyan')
+        ansi_enabled = os.getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+        footer_color = os.getenv('ANSI_FOOTER_COLOR', 'cyan')
         print_footer_hotkeys([("F12","Voltar")], ansi_enabled, footer_color)
         input("Pressione Enter para continuar...")
     
@@ -284,14 +282,13 @@ class MenuPrincipal:
 
     def menu_configuracoes(self):
         """Menu de configurações (cores ANSI e sessão)"""
-        from os import getenv
         from dotenv import set_key
         self.limpar_tela()
         self.exibir_cabecalho()
-        ansi_enabled = getenv('ANSI_ENABLED', 'nao').lower()
-        header_color = getenv('ANSI_HEADER_COLOR', 'yellow')
-        footer_color = getenv('ANSI_FOOTER_COLOR', 'cyan')
-        auto_login = getenv('AUTO_LOGIN', 'nao').lower()
+        ansi_enabled = os.getenv('ANSI_ENABLED', 'nao').lower()
+        header_color = os.getenv('ANSI_HEADER_COLOR', 'yellow')
+        footer_color = os.getenv('ANSI_FOOTER_COLOR', 'cyan')
+        auto_login = os.getenv('AUTO_LOGIN', 'nao').lower()
         print("CONFIGURAÇÕES")
         print("-" * 60)
         print(f"1. ANSI Enabled (sim/nao): {ansi_enabled}")
@@ -330,9 +327,8 @@ class MenuPrincipal:
         self.exibir_cabecalho()
         print("\nMÓDULO DE USUÁRIOS")
         print("Em desenvolvimento...")
-        from os import getenv
-        ansi_enabled = getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
-        footer_color = getenv('ANSI_FOOTER_COLOR', 'cyan')
+        ansi_enabled = os.getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+        footer_color = os.getenv('ANSI_FOOTER_COLOR', 'cyan')
         print_footer_hotkeys([("F12","Voltar")], ansi_enabled, footer_color)
         input("Pressione Enter para continuar...")
     
