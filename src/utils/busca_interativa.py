@@ -1,5 +1,7 @@
 import os
 from typing import List, Dict, Any, Optional, Callable
+import os
+from utils.tui import print_title, print_table
 
 class BuscaInterativa:
     """Classe para busca interativa com diferentes critérios e seleção por índice"""
@@ -12,30 +14,25 @@ class BuscaInterativa:
         os.system('cls' if os.name == 'nt' else 'clear')
     
     def exibir_resultados(self, resultados: List[Dict], titulo: str, colunas: List[str]):
-        """Exibir resultados em formato tabular"""
+        """Exibir resultados em formato tabular com cabeçalho e zebra"""
         if not resultados:
             print("Nenhum resultado encontrado.")
             return
         
-        print(f"\n{titulo}")
-        print("=" * 80)
-        
-        # Cabeçalho
-        header = f"{'IDX':<4}"
-        for coluna in colunas:
-            header += f" {coluna:<20}"
-        print(header)
-        print("-" * 80)
-        
-        # Dados
+        ansi_enabled = os.getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+        header_color = os.getenv('ANSI_HEADER_COLOR', 'yellow')
+        print_title(titulo, ansi_enabled, header_color)
+
+        # Montar tabela
+        headers = [("IDX", 4)] + [(c, 20) for c in colunas]
+        rows = []
         for i, item in enumerate(resultados, 1):
-            linha = f"{i:<4}"
+            row = [f"{i}"]
             for coluna in colunas:
                 valor = str(item.get(coluna, 'N/A'))[:20]
-                linha += f" {valor:<20}"
-            print(linha)
-        
-        print("-" * 80)
+                row.append(valor)
+            rows.append(row)
+        print_table(headers, rows, ansi_enabled, header_color, zebra=True)
     
     def selecionar_por_indice(self, resultados: List[Dict], mensagem: str = "Escolha o índice") -> Optional[Dict]:
         """Permitir seleção por índice"""
@@ -130,9 +127,11 @@ class BuscaInterativa:
         # Selecionar por índice
         return self.selecionar_por_indice(categorias, "Escolha a categoria")
     
-    def buscar_produto(self, titulo: str = "SELECIONAR PRODUTO", com_estoque: bool = False) -> Optional[Dict]:
-        """Buscar produto com diferentes critérios"""
-        tipo_busca = self.menu_tipo_busca("produto")
+    def buscar_produto(self, titulo: str = "SELECIONAR PRODUTO", com_estoque: bool = False, tipo_forcado: Optional[str] = None) -> Optional[Dict]:
+        """Buscar produto com diferentes critérios.
+        Se tipo_forcado for informado (ex.: "nome", "descricao", "texto", "id"), ignora o menu.
+        """
+        tipo_busca = tipo_forcado or self.menu_tipo_busca("produto")
         
         if tipo_busca == "cancelar":
             return None

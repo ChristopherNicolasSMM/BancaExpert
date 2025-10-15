@@ -13,6 +13,7 @@ Sistema em console para gerenciamento completo de banca de jornal, incluindo cad
 - [Estrutura do Projeto](#estrutura-do-projeto)
 - [Instalação](#instalação)
 - [Configuração](#configuração)
+- [Atalhos de Teclado](#atalhos-de-teclado)
 - [Uso](#uso)
 - [Módulos](#módulos)
 - [Banco de Dados](#banco-de-dados)
@@ -145,6 +146,10 @@ NCM_PADRAO_BEBIDAS=22021000
 - **DB_PATH**: Caminho do arquivo do banco de dados SQLite
 - **LOG_LEVEL**: Nível de detalhe dos logs (DEBUG, INFO, WARNING, ERROR)
 
+### Guia Completo de Configurações
+
+Consulte o documento: [Guia de Configurações](CONFIGURACOES.md)
+
 ## 💻 Uso
 
 ### Primeiro Acesso
@@ -206,6 +211,46 @@ MENU PRINCIPAL
 - Modelos pré-formatados
 - Backup de segurança
 - Migração de dados
+
+## ⌨️ Atalhos de Teclado
+
+Os menus e telas seguem um padrão de atalho inspirado em sistemas DOS/Clipper, exibidos no rodapé de cada tela.
+
+- Menu Principal:
+  - F5: Clientes
+  - F6: Relatórios
+  - F7: Importação/Exportação
+  - F8: Usuários
+  - F9: Configurações
+  - F12: Sair
+
+- Menu Produtos:
+  - F1: Buscar
+  - F2: Buscar por nome
+  - F3: Editar
+  - F4: Excluir
+  - F5: Consultar Estoque
+  - F12: Voltar
+
+- Menu Vendas:
+  - F1: Nova venda
+  - F6: Histórico de vendas
+  - F7: Vendas em aberto
+  - F12: Voltar
+
+- Durante a Venda (carrinho):
+  - F1: Pesquisar produto (escolha de tipo)
+  - F2: Pesquisar produto por nome
+  - F3: Remover item
+  - F4: Finalizar venda
+  - F5: Selecionar cliente
+  - F6: Histórico de vendas
+  - F7: Vendas em aberto
+  - F12/ESC: Cancelar venda
+
+Observações:
+- Também é possível digitar os números exibidos (1/2/3/0) e pressionar Enter.
+- O rodapé sempre mostra os atalhos disponíveis na tela atual.
 
 ## 🗃️ Banco de Dados
 

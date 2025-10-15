@@ -1,15 +1,19 @@
 import sqlite3
 from datetime import datetime
 from utils.busca_interativa import BuscaInterativa
+from utils.tui import clear_screen, print_header, print_footer_hotkeys, prompt_text, read_key, print_title, print_table
 
 class ProdutoController:
-    def __init__(self, database):
+    def __init__(self, database, usuario_logado=None):
         self.db = database
         self.busca = BuscaInterativa(database)
+        self.usuario_logado = usuario_logado
     
     def listar_produtos(self):
         """Listar todos os produtos"""
         try:
+            clear_screen()
+            print_header(self.usuario_logado['nome'] if self.usuario_logado else None)
             produtos = self.db.executar_consulta('''
                 SELECT p.*, c.nome as categoria_nome 
                 FROM produtos p 
@@ -18,16 +22,25 @@ class ProdutoController:
                 ORDER BY p.nome
             ''')
             
-            print("\nLISTA DE PRODUTOS")
-            print("-" * 100)
-            print(f"{'ID':<3} {'NOME':<20} {'CATEGORIA':<15} {'PREÇO':<10} {'ESTOQUE':<8} {'NCM':<12}")
-            print("-" * 100)
-            
+            import os
+            ansi_enabled = os.getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+            header_color = os.getenv('ANSI_HEADER_COLOR', 'yellow')
+            print_title("LISTA DE PRODUTOS", ansi_enabled, header_color)
+            headers = [("ID", 4), ("NOME", 20), ("CATEGORIA", 15), ("PREÇO", 10), ("ESTOQUE", 8), ("NCM", 12)]
+            rows = []
             for produto in produtos:
-                print(f"{produto['id']:<3} {produto['nome']:<20} {produto['categoria_nome']:<15} "
-                      f"R$ {produto['preco_venda']:<8.2f} {produto['estoque']:<8} {produto['ncm'] or 'N/A':<12}")
-            
-            print("-" * 100)
+                rows.append([
+                    str(produto['id']),
+                    str(produto['nome']),
+                    str(produto['categoria_nome']),
+                    f"R$ {produto['preco_venda']:.2f}",
+                    str(produto['estoque']),
+                    (produto['ncm'] or 'N/A')
+                ])
+            print_table(headers, rows, ansi_enabled, header_color, zebra=True)
+            enabled_colors = os.getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+            footer_color = os.getenv('ANSI_FOOTER_COLOR', 'cyan')
+            print_footer_hotkeys([("F12","Voltar")], enabled_colors, footer_color)
             input("\nPressione Enter para continuar...")
             
         except sqlite3.Error as e:
@@ -36,11 +49,15 @@ class ProdutoController:
     def cadastrar_produto(self):
         """Cadastrar novo produto"""
         try:
-            print("\nCADASTRAR NOVO PRODUTO")
-            print("-" * 40)
+            clear_screen()
+            print_header(self.usuario_logado['nome'] if self.usuario_logado else None)
+            import os
+            ansi_enabled = os.getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+            header_color = os.getenv('ANSI_HEADER_COLOR', 'yellow')
+            print_title("CADASTRAR NOVO PRODUTO", ansi_enabled, header_color)
             
-            nome = input("Nome do produto: ")
-            descricao = input("Descrição: ")
+            nome = prompt_text("Nome do produto: ")
+            descricao = prompt_text("Descrição: ")
             
             # Usar busca interativa para categoria
             categoria = self.busca.buscar_categoria("SELECIONAR CATEGORIA PARA O PRODUTO")
@@ -49,14 +66,14 @@ class ProdutoController:
                 return
             categoria_id = categoria['id']
             
-            preco_custo = float(input("Preço de custo: R$ "))
-            preco_venda = float(input("Preço de venda: R$ "))
-            estoque = int(input("Estoque inicial: "))
-            estoque_minimo = int(input("Estoque mínimo: "))
-            codigo_barras = input("Código de barras (opcional): ") or None
-            ncm = input("NCM (opcional): ") or None
-            cest = input("CEST (opcional): ") or None
-            unidade = input("Unidade (UN, PCT, etc): ") or "UN"
+            preco_custo = float(prompt_text("Preço de custo: R$ "))
+            preco_venda = float(prompt_text("Preço de venda: R$ "))
+            estoque = int(prompt_text("Estoque inicial: "))
+            estoque_minimo = int(prompt_text("Estoque mínimo: "))
+            codigo_barras = prompt_text("Código de barras (opcional): ") or None
+            ncm = prompt_text("NCM (opcional): ") or None
+            cest = prompt_text("CEST (opcional): ") or None
+            unidade = prompt_text("Unidade (UN, PCT, etc): ") or "UN"
             
             produto_id = self.db.executar_consulta('''
                 INSERT INTO produtos (

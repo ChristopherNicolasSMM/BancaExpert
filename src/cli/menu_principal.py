@@ -1,6 +1,9 @@
 import os
 import sys
 from datetime import datetime
+from utils.tui import read_key, print_footer_hotkeys, prompt_text, clear_screen, print_header
+from dotenv import load_dotenv, set_key
+import os
 
 class MenuPrincipal:
     def __init__(self, database):
@@ -9,16 +12,14 @@ class MenuPrincipal:
         
     def limpar_tela(self):
         """Limpar a tela do terminal"""
-        os.system('cls' if os.name == 'nt' else 'clear')
+        clear_screen()
     
     def exibir_cabecalho(self):
         """Exibir cabeçalho do sistema"""
-        print("=" * 60)
-        print("           SISTEMA BANCAKPERT - BANCA DE JORNAL")
-        print("=" * 60)
-        if self.usuario_logado:
-            print(f"Usuário: {self.usuario_logado['nome']} | Data: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-        print()
+        user_name = self.usuario_logado['nome'] if self.usuario_logado else None
+        enabled_colors = os.getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+        header_color = os.getenv('ANSI_HEADER_COLOR', 'yellow')
+        print_header(user_name, enabled_colors, header_color)
     
     def login(self):
         """Sistema de login"""
@@ -35,6 +36,18 @@ class MenuPrincipal:
         
         if usuario:
             self.usuario_logado = usuario[0]
+            # Salvar sessão no .env
+            try:
+                env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', '.env')
+                env_path = os.path.abspath(env_path)
+                set_key(env_path, 'SESSION_USER', str(self.usuario_logado.get('nome', '')))
+                set_key(env_path, 'SESSION_USER_ID', str(self.usuario_logado.get('id', '')))
+                set_key(env_path, 'SESSION_USER_LEVEL', str(self.usuario_logado.get('nivel_permissao', 'user')))
+                # habilitar auto-login se configurado
+                if os.getenv('AUTO_LOGIN_DEFAULT', 'nao').lower() == 'sim':
+                    set_key(env_path, 'AUTO_LOGIN', 'sim')
+            except Exception:
+                pass
             return True
         else:
             print("Credenciais inválidas!")
@@ -54,10 +67,34 @@ class MenuPrincipal:
             print("4. Relatórios")
             print("5. Importar/Exportar")
             print("6. Usuários e Permissões")
+            print("7. Configurações")
             print("0. Sair")
             print()
-            
-            opcao = input("Escolha uma opção: ")
+            from os import getenv
+            ansi_enabled = getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+            footer_color = getenv('ANSI_FOOTER_COLOR', 'cyan')
+            print_footer_hotkeys([
+                ("F1", "Pesquisar"), ("F2", "Por Nome"), ("F5", "Clientes"), ("F6", "Relatórios"),
+                ("F7", "Import/Export"), ("F8", "Usuários"), ("F12", "Sair")
+            ], ansi_enabled, footer_color)
+            print("Use atalhos ou digite a opção e ENTER:")
+            key = read_key()
+            if key in {"1","2","3","4","5","6","7","0"}:
+                opcao = key
+            elif key == "F12":
+                opcao = "0"
+            elif key == "F5":
+                opcao = "3"
+            elif key == "F6":
+                opcao = "4"
+            elif key == "F7":
+                opcao = "5"
+            elif key == "F8":
+                opcao = "6"
+            elif key == "F9":
+                opcao = "7"
+            else:
+                opcao = prompt_text("Escolha uma opção: ")
             
             if opcao == "1":
                 self.menu_produtos()
@@ -71,6 +108,8 @@ class MenuPrincipal:
                 self.menu_importar_exportar()
             elif opcao == "6":
                 self.menu_usuarios()
+            elif opcao == "7":
+                self.menu_configuracoes()
             elif opcao == "0":
                 print("Saindo do sistema...")
                 break
@@ -82,7 +121,7 @@ class MenuPrincipal:
         """Menu de gerenciamento de produtos"""
         from controler.produto_controller import ProdutoController
         
-        controller = ProdutoController(self.db)
+        controller = ProdutoController(self.db, usuario_logado=self.usuario_logado)
         
         while True:
             self.limpar_tela()
@@ -96,8 +135,21 @@ class MenuPrincipal:
             print("5. Consultar Estoque")
             print("0. Voltar")
             print()
-            
-            opcao = input("Escolha uma opção: ")
+            ansi_enabled = getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+            footer_color = getenv('ANSI_FOOTER_COLOR', 'cyan')
+            print_footer_hotkeys([
+                ("F1", "Buscar"), ("F2", "Por Nome"), ("F3", "Editar"), ("F4", "Excluir"),
+                ("F5", "Estoque"), ("F12", "Voltar")
+            ], ansi_enabled, footer_color)
+            key = read_key()
+            if key in {"1","2","3","4","5","0"}:
+                opcao = key
+            elif key == "F12":
+                opcao = "0"
+            elif key == "F5":
+                opcao = "5"
+            else:
+                opcao = prompt_text("Escolha uma opção: ")
             
             if opcao == "1":
                 controller.listar_produtos()
@@ -119,7 +171,7 @@ class MenuPrincipal:
         """Menu de vendas"""
         from controler.venda_controller import VendaController
         
-        controller = VendaController(self.db, self.usuario_logado['id'])
+        controller = VendaController(self.db, self.usuario_logado['id'], usuario_logado=self.usuario_logado)
         
         while True:
             self.limpar_tela()
@@ -131,8 +183,24 @@ class MenuPrincipal:
             print("3. Vendas em Aberto")
             print("0. Voltar")
             print()
-            
-            opcao = input("Escolha uma opção: ")
+            ansi_enabled = getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+            footer_color = getenv('ANSI_FOOTER_COLOR', 'cyan')
+            print_footer_hotkeys([
+                ("F1", "Nova"), ("F6", "Histórico"), ("F7", "Em Aberto"), ("F12", "Voltar")
+            ], ansi_enabled, footer_color)
+            key = read_key()
+            if key in {"1","2","3","0"}:
+                opcao = key
+            elif key == "F1":
+                opcao = "1"
+            elif key == "F6":
+                opcao = "2"
+            elif key == "F7":
+                opcao = "3"
+            elif key == "F12":
+                opcao = "0"
+            else:
+                opcao = prompt_text("Escolha uma opção: ")
             
             if opcao == "1":
                 controller.nova_venda()
@@ -150,7 +218,7 @@ class MenuPrincipal:
         """Menu de clientes"""
         from controler.cliente_controller import ClienteController
         
-        controller = ClienteController(self.db)
+        controller = ClienteController(self.db, usuario_logado=self.usuario_logado)
         
         while True:
             self.limpar_tela()
@@ -164,8 +232,20 @@ class MenuPrincipal:
             print("5. Consultar Limite Crédito")
             print("0. Voltar")
             print()
-            
-            opcao = input("Escolha uma opção: ")
+            ansi_enabled = getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+            footer_color = getenv('ANSI_FOOTER_COLOR', 'cyan')
+            print_footer_hotkeys([
+                ("F1", "Listar"), ("F2", "Cadastrar"), ("F3", "Editar"), ("F4", "Excluir"), ("F5", "Limite"), ("F12", "Voltar")
+            ], ansi_enabled, footer_color)
+            key = read_key()
+            if key in {"1","2","3","4","5","0"}:
+                opcao = key
+            elif key == "F12":
+                opcao = "0"
+            elif key == "F5":
+                opcao = "5"
+            else:
+                opcao = prompt_text("Escolha uma opção: ")
             
             if opcao == "1":
                 controller.listar_clientes()
@@ -185,8 +265,14 @@ class MenuPrincipal:
     
     def menu_relatorios(self):
         """Menu de relatórios"""
+        self.limpar_tela()
+        self.exibir_cabecalho()
         print("\nMÓDULO DE RELATÓRIOS")
         print("Em desenvolvimento...")
+        from os import getenv
+        ansi_enabled = getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+        footer_color = getenv('ANSI_FOOTER_COLOR', 'cyan')
+        print_footer_hotkeys([("F12","Voltar")], ansi_enabled, footer_color)
         input("Pressione Enter para continuar...")
     
     def menu_importar_exportar(self):
@@ -195,6 +281,43 @@ class MenuPrincipal:
         
         controller = ImportExportController(self.db)
         controller.menu_importar_exportar()
+
+    def menu_configuracoes(self):
+        """Menu de configurações (cores ANSI e sessão)"""
+        from os import getenv
+        from dotenv import set_key
+        self.limpar_tela()
+        self.exibir_cabecalho()
+        ansi_enabled = getenv('ANSI_ENABLED', 'nao').lower()
+        header_color = getenv('ANSI_HEADER_COLOR', 'yellow')
+        footer_color = getenv('ANSI_FOOTER_COLOR', 'cyan')
+        auto_login = getenv('AUTO_LOGIN', 'nao').lower()
+        print("CONFIGURAÇÕES")
+        print("-" * 60)
+        print(f"1. ANSI Enabled (sim/nao): {ansi_enabled}")
+        print(f"2. ANSI Header Color: {header_color}")
+        print(f"3. ANSI Footer Color: {footer_color}")
+        print(f"4. Auto Login (sim/nao): {auto_login}")
+        print("0. Voltar")
+        print()
+        print_footer_hotkeys([("F12","Voltar")])
+        opcao = input("Escolha uma opção: ")
+        env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
+        if opcao == '1':
+            val = input("sim/nao: ").strip().lower() or ansi_enabled
+            set_key(env_path, 'ANSI_ENABLED', 'sim' if val == 'sim' else 'nao')
+        elif opcao == '2':
+            val = input("Cor (yellow, cyan, blue, green, red, magenta, white): ").strip().lower() or header_color
+            set_key(env_path, 'ANSI_HEADER_COLOR', val)
+        elif opcao == '3':
+            val = input("Cor (yellow, cyan, blue, green, red, magenta, white): ").strip().lower() or footer_color
+            set_key(env_path, 'ANSI_FOOTER_COLOR', val)
+        elif opcao == '4':
+            val = input("sim/nao: ").strip().lower() or auto_login
+            set_key(env_path, 'AUTO_LOGIN', 'sim' if val == 'sim' else 'nao')
+        else:
+            return
+        input("\nConfiguração salva. Pressione Enter para continuar...")
     
     def menu_usuarios(self):
         """Menu de usuários"""
@@ -203,11 +326,27 @@ class MenuPrincipal:
             input("Pressione Enter para continuar...")
             return
             
+        self.limpar_tela()
+        self.exibir_cabecalho()
         print("\nMÓDULO DE USUÁRIOS")
         print("Em desenvolvimento...")
+        from os import getenv
+        ansi_enabled = getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+        footer_color = getenv('ANSI_FOOTER_COLOR', 'cyan')
+        print_footer_hotkeys([("F12","Voltar")], ansi_enabled, footer_color)
         input("Pressione Enter para continuar...")
     
     def executar(self):
         """Executar o sistema"""
+        load_dotenv()
+        auto_login = os.getenv('AUTO_LOGIN', 'nao').lower() == 'sim'
+        if auto_login and os.getenv('SESSION_USER') and os.getenv('SESSION_USER_ID'):
+            self.usuario_logado = {
+                'nome': os.getenv('SESSION_USER'),
+                'id': int(os.getenv('SESSION_USER_ID') or 0),
+                'nivel_permissao': os.getenv('SESSION_USER_LEVEL') or 'user'
+            }
+            self.menu_principal()
+            return
         if self.login():
             self.menu_principal()

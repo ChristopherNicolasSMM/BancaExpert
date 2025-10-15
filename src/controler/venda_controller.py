@@ -2,11 +2,14 @@ import sqlite3
 import os
 from datetime import datetime
 from utils.busca_interativa import BuscaInterativa
+from utils.tui import read_key, print_footer_hotkeys, prompt_text, clear_screen, print_header, print_title, print_table
+import os
 
 class VendaController:
-    def __init__(self, database, usuario_id):
+    def __init__(self, database, usuario_id, usuario_logado=None):
         self.db = database
         self.usuario_id = usuario_id
+        self.usuario_logado = usuario_logado
         self.carrinho = []
         self.busca = BuscaInterativa(database)
     
@@ -24,16 +27,53 @@ class VendaController:
                 if usar_cliente == 's':
                     cliente_id = self.selecionar_cliente()
             
-            # Adicionar itens ao carrinho
+            # Adicionar itens ao carrinho com hotkeys
             while True:
+                clear_screen()
+                enabled_colors = os.getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+                header_color = os.getenv('ANSI_HEADER_COLOR', 'yellow')
+                print_header(self.usuario_logado['nome'] if self.usuario_logado else None, enabled_colors, header_color)
                 self.exibir_carrinho()
-                print("\n1. Adicionar produto")
-                print("2. Remover produto")
-                print("3. Finalizar venda")
-                print("0. Cancelar venda")
-                
-                opcao = input("\nEscolha uma opção: ")
-                
+                print("\nComandos: 1-Adicionar  2-Remover  3-Finalizar  0-Cancelar")
+                print_footer_hotkeys([
+                    ("F1", "Pesquisar"), ("F2", "Nome"), ("F3", "Remover"), ("F4", "Finalizar"),
+                    ("F5", "Cliente"), ("F6", "Histórico"), ("F7", "Aberto"), ("F12", "Cancelar")
+                ], enabled_colors, os.getenv('ANSI_FOOTER_COLOR', 'cyan'))
+                print("Pressione uma tecla de atalho ou digite a opção e ENTER:")
+
+                key = read_key()
+                opcao = None
+                if key in {"1", "2", "3", "0"}:
+                    opcao = key
+                elif key == "F1":
+                    # Pesquisa geral
+                    self.adicionar_produto_carrinho()
+                    continue
+                elif key == "F2":
+                    # Pesquisa forçada por nome
+                    self.adicionar_produto_carrinho(tipo_forcado="nome")
+                    continue
+                elif key == "F3":
+                    self.remover_produto_carrinho()
+                    continue
+                elif key == "F4":
+                    self.finalizar_venda(cliente_id)
+                    break
+                elif key == "F5":
+                    cliente_id = self.selecionar_cliente()
+                    continue
+                elif key == "F6":
+                    self.historico_vendas()
+                    continue
+                elif key == "F7":
+                    self.vendas_aberto()
+                    continue
+                elif key == "F12" or key == "ESC":
+                    print("Venda cancelada!")
+                    break
+                else:
+                    opcao = prompt_text("\nEscolha uma opção: ")
+
                 if opcao == "1":
                     self.adicionar_produto_carrinho()
                 elif opcao == "2":
@@ -51,17 +91,17 @@ class VendaController:
             print(f"Erro ao processar venda: {e}")
         input("Pressione Enter para continuar...")
     
-    def adicionar_produto_carrinho(self):
-        """Adicionar produto ao carrinho"""
+    def adicionar_produto_carrinho(self, tipo_forcado=None):
+        """Adicionar produto ao carrinho. tipo_forcado permite forçar o modo de busca (ex.: 'nome')."""
         try:
             # Usar busca interativa para selecionar produto
-            produto = self.busca.buscar_produto("SELECIONAR PRODUTO PARA VENDA", com_estoque=True)
+            produto = self.busca.buscar_produto("SELECIONAR PRODUTO PARA VENDA", com_estoque=True, tipo_forcado=tipo_forcado)
             if not produto:
                 print("Produto não selecionado!")
                 return
             print(f"Produto: {produto['nome']} | Preço: R$ {produto['preco_venda']:.2f} | Estoque: {produto['estoque']}")
             
-            quantidade = int(input("Quantidade: "))
+            quantidade = int(prompt_text("Quantidade: "))
             
             if quantidade > produto['estoque']:
                 print("Quantidade indisponível em estoque!")
@@ -203,16 +243,19 @@ class VendaController:
                 LIMIT 50
             ''')
             
-            print("\nHISTÓRICO DE VENDAS (Últimas 50)")
-            print("=" * 100)
-            print(f"{'Nº':<4} {'DATA':<16} {'CLIENTE':<20} {'VALOR':<10} {'PAGAMENTO':<12} {'VENDEDOR':<15}")
-            print("-" * 100)
-            
+            import os
+            ansi_enabled = os.getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+            header_color = os.getenv('ANSI_HEADER_COLOR', 'yellow')
+            print_title("HISTÓRICO DE VENDAS (Últimas 50)", ansi_enabled, header_color)
+            headers = [("Nº", 4), ("DATA", 16), ("CLIENTE", 20), ("VALOR", 10), ("PAGAMENTO", 12), ("VENDEDOR", 15)]
+            rows = []
             for venda in vendas:
                 data = datetime.strptime(venda['data_venda'], '%Y-%m-%d %H:%M:%S').strftime('%d/%m/%y %H:%M')
                 cliente = venda['cliente_nome'] or '---'
-                print(f"{venda['id']:<4} {data:<16} {cliente:<20} R$ {venda['valor_total']:<8.2f} "
-                      f"{venda['forma_pagamento']:<12} {venda['usuario_nome']:<15}")
+                rows.append([
+                    str(venda['id']), data, cliente, f"R$ {venda['valor_total']:.2f}", venda['forma_pagamento'], venda['usuario_nome']
+                ])
+            print_table(headers, rows, ansi_enabled, header_color, zebra=True)
             
         except sqlite3.Error as e:
             print(f"Erro ao consultar histórico: {e}")
@@ -229,20 +272,23 @@ class VendaController:
                 ORDER BY v.data_venda
             ''')
             
-            print("\nVENDAS EM ABERTO (FIADO)")
-            print("=" * 80)
-            
+            import os
+            ansi_enabled = os.getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+            header_color = os.getenv('ANSI_HEADER_COLOR', 'yellow')
+            print_title("VENDAS EM ABERTO (FIADO)", ansi_enabled, header_color)
             if not vendas_aberto:
                 print("Nenhuma venda em aberto.")
                 return
-            
+            headers = [("Nº", 6), ("CLIENTE", 20), ("DATA", 10), ("VALOR", 10), ("TEL", 14)]
+            rows = []
             total_aberto = 0
             for venda in vendas_aberto:
                 data = datetime.strptime(venda['data_venda'], '%Y-%m-%d %H:%M:%S').strftime('%d/%m/%y')
-                print(f"Venda {venda['id']} | Cliente: {venda['cliente_nome']} | "
-                      f"Data: {data} | Valor: R$ {venda['valor_total']:.2f} | Tel: {venda['telefone']}")
+                rows.append([
+                    str(venda['id']), venda['cliente_nome'], data, f"R$ {venda['valor_total']:.2f}", venda['telefone']
+                ])
                 total_aberto += venda['valor_total']
-            
+            print_table(headers, rows, ansi_enabled, header_color, zebra=True)
             print(f"\nTOTAL EM ABERTO: R$ {total_aberto:.2f}")
             
         except sqlite3.Error as e:

@@ -1,28 +1,41 @@
 import sqlite3
 from utils.busca_interativa import BuscaInterativa
+from utils.tui import clear_screen, print_header, print_footer_hotkeys, prompt_text, print_title, print_table
 
 class ClienteController:
-    def __init__(self, database):
+    def __init__(self, database, usuario_logado=None):
         self.db = database
         self.busca = BuscaInterativa(database)
+        self.usuario_logado = usuario_logado
     
     def listar_clientes(self):
         """Listar todos os clientes"""
         try:
+            clear_screen()
+            print_header(self.usuario_logado['nome'] if self.usuario_logado else None)
             clientes = self.db.executar_consulta(
                 "SELECT * FROM clientes WHERE ativo = 1 ORDER BY nome"
             )
             
-            print("\nLISTA DE CLIENTES")
-            print("-" * 80)
-            print(f"{'ID':<3} {'NOME':<25} {'TELEFONE':<15} {'EMAIL':<25} {'LIMITE':<10}")
-            print("-" * 80)
-            
+            import os
+            ansi_enabled = os.getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+            header_color = os.getenv('ANSI_HEADER_COLOR', 'yellow')
+            print_title("LISTA DE CLIENTES", ansi_enabled, header_color)
+            headers = [("ID", 4), ("NOME", 25), ("TELEFONE", 15), ("EMAIL", 25), ("LIMITE", 10)]
+            rows = []
             for cliente in clientes:
-                print(f"{cliente['id']:<3} {cliente['nome']:<25} {cliente['telefone'] or 'N/A':<15} "
-                      f"{cliente['email'] or 'N/A':<25} R$ {cliente['limite_credito']:<8.2f}")
-            
-            print("-" * 80)
+                rows.append([
+                    str(cliente['id']),
+                    str(cliente['nome']),
+                    str(cliente['telefone'] or 'N/A'),
+                    str(cliente['email'] or 'N/A'),
+                    f"R$ {cliente['limite_credito']:.2f}"
+                ])
+            print_table(headers, rows, ansi_enabled, header_color, zebra=True)
+            import os
+            enabled_colors = os.getenv('ANSI_ENABLED', 'nao').lower() == 'sim'
+            footer_color = os.getenv('ANSI_FOOTER_COLOR', 'cyan')
+            print_footer_hotkeys([("F12","Voltar")], enabled_colors, footer_color)
             input("\nPressione Enter para continuar...")
             
         except sqlite3.Error as e:
